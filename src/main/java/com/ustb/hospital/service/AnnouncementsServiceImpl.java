@@ -19,6 +19,7 @@ public class AnnouncementsServiceImpl {
         PageInfo pageInfo = new PageInfo(list);
         //System.out.println(pageInfo);
         return pageInfo;
+
     }
 
     public List<Announcements> query(){
