@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+    <settings>
+        <setting name="logImpl" value="STDOUT_LOGGING"/>
+    </settings>
+
+    <plugins>
+        <!-- com.github.pagehelper为PageHelper类所在包名 -->
+        <plugin interceptor="com.github.pagehelper.PageInterceptor">
+            <!-- 使用下面的方式配置参数，后面会有所有的参数介绍 -->
+            <property name="helperDialect" value="mysql"/>
+        </plugin>
+    </plugins>
+    <environments default="development">
+        <environment id="development">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <property name="driver" value="com.mysql.cj.jdbc.Driver"/>
+                <property name="url" value="jdbc:mysql://localhost:3306/hospital?useUnicode=true&amp;characterEncoding=utf8"/>
+                <property name="username" value="root"/>
+                <property name="password" value="275233"/>
+            </dataSource>
+        </environment>
+    </environments>
+    <mappers>
+        <mapper resource="com/ustb/hospital/mapper/DepartmentsMapper.xml"/>
+        <mapper resource="com/ustb/hospital/mapper/AdminsMapper.xml"/>
+        <mapper resource="com/ustb/hospital/mapper/DoctorsMapper.xml"/>
+        <mapper resource="com/ustb/hospital/mapper/PatientsMapper.xml"/>
+        <mapper resource="com/ustb/hospital/mapper/ProfessionalTitlesMapper.xml"/>
+        <mapper resource="com/ustb/hospital/mapper/ScheduleMapper.xml"/>
+        <mapper resource="com/ustb/hospital/mapper/AppointmentMapper.xml"/>
+        <mapper resource="com/ustb/hospital/mapper/ConsultationMapper.xml"/>
+        <mapper resource="com/ustb/hospital/mapper/AnnouncementsMapper.xml"/>
+    </mappers>
+</configuration>

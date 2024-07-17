@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title></title>
+<link rel="stylesheet" href="/css/pintuer.css">
+<link rel="stylesheet" href="/css/admin.css">
+<script src="../js/jquery-3.7.1.min.js"></script>
+<script src="../js/pintuer.js"></script>
+</head>
+<body>
+
+  <div class="panel admin-panel">
+    <div class="panel-head"><strong class="icon-reorder"> 内容列表</strong> <a href="" style="float:right; display:none;">添加字段</a></div>
+    <div class="padding border-bottom">
+      <ul class="search" style="padding-left:10px;">
+        <li> <a class="button border-main icon-plus-square-o" href="/schedule/add.html"> 添加内容</a> </li>
+        <if condition="$iscid eq 1">
+          <li>
+            <select name="deptId" class="input" style="width:200px; line-height:17px;" >
+              <option value="-1">请选择科室</option>
+            </select>
+          </li>
+        </if>
+        <li>
+          <input type="text" placeholder="请输入搜索医生姓名" name="docName" class="input" style="width:250px; line-height:17px;display:inline-block" />
+          <a href="javascript:void(0)" class="button border-main icon-search" onclick="changeSearch()" > 搜索</a></li>
+      </ul>
+    </div>
+    <table class="table table-hover text-center">
+      <thead>
+      <tr>
+        <th width="100" style="text-align:left; padding-left:20px;">ID</th>
+        <!--<th>排班标号</th>-->
+        <th>排班医生</th>
+        <th>排班日期</th>
+        <th>排班时间</th>
+        <th>排班科室</th>
+        <th>能否排班</th>
+        <th>就诊数量</th>
+        <th>备注信息</th>
+        <th >操作</th>
+
+      </tr>
+      </thead>
+      <tbody id="scheduleBody">
+      </tbody>
+
+      <tr>
+        <td colspan="8">
+          <div class="pagelist">
+            <a href="javascript:void(0)" id="pre" onclick="prePage()">上一页</a>
+            <a href="javascript:void(0)" id="next" onclick="nextPage()">下一页</a>
+            <a href="javascript:void(0)" id="last" onclick="lastPage()">尾页</a>
+          </div>
+        </td>
+      </tr>
+    </table>
+  </div>
+<!--</form>-->
+<script type="text/javascript">
+
+//
+function  initDeptList(){
+  $.ajax({
+    type: "GET",
+    url: "/second/all",
+    //data:{"pageNum":pageNum,"deptId":deptId,"docName":docName,"jobNumber":jobNumber},
+    dataType: "json",
+    success: function (res) {//list<Dept>
+      $.each(res, function (i, v) {
+        var optionObj = $("<option value='" + v.department_id + "'>" + v.department_name + "</option>");
+
+        optionObj.appendTo($("select[name='deptId']"));
+      })
+    }
+  })
+}
+//发送ajax 请求 doc/list
+//页面加载完成之后调用的函数
+function  initScheduleList(pageNum,docName,deptId){
+  $.ajax({
+    type:"GET",
+    url:"/schedule/list",
+    data:{"pageNum":pageNum,"deptId":deptId,"docName":docName},
+    dataType:"json",
+    success:function (res) {
+
+      $("#scheduleBody").empty();
+      $.each(res.list,function (i,v){
+        var trObj = $('<tr id="tr'+v.schedule_id+'"></tr>');
+
+        trObj.append($("<td>"+v.schedule_id+"</td>"));
+        trObj.append($("<td>"+v.doctors.name+"</td>"));
+        trObj.append($("<td>"+v.date+"</td>"));
+        trObj.append($("<td>"+v.shift_time+"</td>"));
+        trObj.append($("<td>"+v.departments.department_name+"</td>"));
+        if (v.is_available){
+          trObj.append($("<td>"+"能"+"</td>"));
+        }else{
+          trObj.append($("<td>"+"不能"+"</td>"));
+        }
+        trObj.append($("<td>"+v.visit_count+"</td>"));
+        trObj.append($("<td>"+v.remarks+"</td>"));
+
+        // trObj.append($('<td><a class="button border-main" href="/toEdit?deptId='+v.department_id+'"><span class="icon-edit"></span>修改</a></td>'));
+        trObj.append($('<td><a class="button border-main" href="/schedule/toEdit?scheduleId='+v.schedule_id+'"><span class="icon-edit"></span>修改</a><a class="button border-red" href="javascript:void(0)" onclick="del('+v.schedule_id+')"><span class="icon-trash-o"></span>删除</a></td>'));
+
+        trObj.appendTo($("#scheduleBody"))
+      })
+
+      //将.pagelist下的span删除
+      $(".pagelist span").remove()
+      //页码遍历
+      for (var i = 0; i < res.pages; i++) {
+        //创建span
+        var $span = $("<span onclick='changePage($(this).html())'>"+(i+1)+"</span>")
+
+        if ((i+1) == res.pageNum) {
+          $span.attr("class","current")
+        }
+
+        $("#next").before($span)
+      }
+    }
+  })
+}
+
+$(function (){
+  initScheduleList(1,"",-1);
+  initDeptList();
+})
+
+function changePage(p){
+  var $docName = $("input[name=docName]").val();
+  var $deptId = $("select[name='deptId'] option:selected").val();
+
+  initScheduleList(p,$docName,$deptId)
+}
+
+function prePage(){
+  //获取当前页码
+  var currentPageNumber = $("span[class='current']").text()
+  var $docName = $("input[name=docName]").val();
+  var $deptId = $("select[name='deptId'] option:selected").val();
+
+  $.ajax({
+    type:"GET",
+    url:"/schedule/list",
+    data:{"pageNum":Number(currentPageNumber),"deptId":$deptId},
+    dataType:"json",
+    success:function (res) {
+      if (res.hasPreviousPage) {
+        initScheduleList(Number(currentPageNumber)-1,$docName,$deptId)
+      } else{
+        alert("已经是第一页了")
+      }
+    }
+  })
+}
+
+function nextPage(){
+  //获取当前页码
+  var currentPageNumber = $("span[class='current']").text()
+  var $docName = $("input[name=docName]").val();
+  var $deptId = $("select[name='deptId'] option:selected").val();
+
+  // initDocList(1,$docName,$deptId)
+
+  $.ajax({
+    type:"GET",
+    url:"/schedule/list",
+    data:{"pageNum":Number(currentPageNumber),"deptId":$deptId},
+    dataType:"json",
+    success:function (res) {
+      if (res.hasNextPage) {
+        initScheduleList(Number(currentPageNumber)+1,$docName,$deptId)
+      } else{
+        alert("已经是最后一页了")
+      }
+    }
+  })
+}
+
+function lastPage(){
+  //获取当前页码
+  var currentPageNumber = $("span[class='current']").text()
+  var $docName = $("input[name=docName]").val();
+  var $deptId = $("select[name='deptId'] option:selected").val();
+
+  $.ajax({
+    type:"GET",
+    url:"/schedule/list",
+    data:{"pageNum":Number(currentPageNumber),"deptId":$deptId},
+    dataType:"json",
+    success:function (res) {
+      if (!res.isLastPage) {
+        initScheduleList(res.pages,$docName,$deptId)
+      } else{
+        alert("已经是最后一页了")
+      }
+    }
+  })
+}
+
+//搜索
+function changeSearch(){
+  var $docName = $("input[name=docName]").val();
+  var $deptId = $("select[name='deptId'] option:selected").val();
+
+  initScheduleList(1,$docName,$deptId)
+
+}
+
+//单个删除
+function del(id){
+  var currentPageNumber = $("span[class='current']").text();
+  var $docName = $("input[name=docName]").val();
+  var $deptId = $("select[name='deptId'] option:selected").val();
+
+  if(confirm("您确定要删除吗?")){
+    $.ajax({
+      type: "GET",
+      url: "/schedule/delete",
+      async:true,
+      data: {"scheduleId": id,"pageNum":currentPageNumber,"docName":$docName,"deptId":$deptId},
+      dataType: "json",
+      success: function (res) {
+        alert("删除成功");
+        $("#tr"+id).remove();
+        // initScheduleList(currentPageNumber,$docName,$deptId);
+        // window.location.reload();
+      },
+      error:function (res){
+        alert("删除失败")
+      }
+    })
+  }
+}
+
+//全选
+$("#checkall").click(function(){ 
+  $("input[name='id[]']").each(function(){
+	  if (this.checked) {
+		  this.checked = false;
+	  }
+	  else {
+		  this.checked = true;
+	  }
+  });
+})
+
+//批量删除
+function DelSelect(){
+	var Checkbox=false;
+	 $("input[name='id[]']").each(function(){
+	  if (this.checked==true) {		
+		Checkbox=true;	
+	  }
+	});
+	if (Checkbox){
+		var t=confirm("您确认要删除选中的内容吗？");
+		if (t==false) return false;		
+		$("#listform").submit();		
+	}
+	else{
+		alert("请选择您要删除的内容!");
+		return false;
+	}
+}
+
+//批量排序
+function sorts(){
+	var Checkbox=false;
+	 $("input[name='id[]']").each(function(){
+	  if (this.checked==true) {		
+		Checkbox=true;	
+	  }
+	});
+	if (Checkbox){	
+		
+		$("#listform").submit();		
+	}
+	else{
+		alert("请选择要操作的内容!");
+		return false;
+	}
+}
+
+
+//批量首页显示
+function changeishome(o){
+	var Checkbox=false;
+	 $("input[name='id[]']").each(function(){
+	  if (this.checked==true) {		
+		Checkbox=true;	
+	  }
+	});
+	if (Checkbox){
+		
+		$("#listform").submit();	
+	}
+	else{
+		alert("请选择要操作的内容!");		
+	
+		return false;
+	}
+}
+
+//批量推荐
+function changeisvouch(o){
+	var Checkbox=false;
+	 $("input[name='id[]']").each(function(){
+	  if (this.checked==true) {		
+		Checkbox=true;	
+	  }
+	});
+	if (Checkbox){
+		
+		
+		$("#listform").submit();	
+	}
+	else{
+		alert("请选择要操作的内容!");	
+		
+		return false;
+	}
+}
+
+//批量置顶
+function changeistop(o){
+	var Checkbox=false;
+	 $("input[name='id[]']").each(function(){
+	  if (this.checked==true) {		
+		Checkbox=true;	
+	  }
+	});
+	if (Checkbox){		
+		
+		$("#listform").submit();	
+	}
+	else{
+		alert("请选择要操作的内容!");		
+	
+		return false;
+	}
+}
+
+
+//批量移动
+function changecate(o){
+	var Checkbox=false;
+	 $("input[name='id[]']").each(function(){
+	  if (this.checked==true) {		
+		Checkbox=true;	
+	  }
+	});
+	if (Checkbox){		
+		
+		$("#listform").submit();		
+	}
+	else{
+		alert("请选择要操作的内容!");
+		
+		return false;
+	}
+}
+
+//批量复制
+function changecopy(o){
+	var Checkbox=false;
+	 $("input[name='id[]']").each(function(){
+	  if (this.checked==true) {		
+		Checkbox=true;	
+	  }
+	});
+	if (Checkbox){	
+		var i = 0;
+	    $("input[name='id[]']").each(function(){
+	  		if (this.checked==true) {
+				i++;
+			}		
+	    });
+		if(i>1){ 
+	    	alert("只能选择一条信息!");
+			$(o).find("option:first").prop("selected","selected");
+		}else{
+		
+			$("#listform").submit();		
+		}	
+	}
+	else{
+		alert("请选择要复制的内容!");
+		$(o).find("option:first").prop("selected","selected");
+		return false;
+	}
+}
+
+</script>
+</body>
+</html>

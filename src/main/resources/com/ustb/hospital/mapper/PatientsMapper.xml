@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ustb.hospital.mapper.PatientsMapper">
+
+    <resultMap id="patientMap" type="com.ustb.hospital.entity.Patients">
+        <result column="patient_id" property="patientId"/>
+        <result column="id_card_number" property="idCardNumber"/>
+        <result column="password" property="password"/>
+        <result column="name" property="name"/>
+        <result column="avatar" property="avatar"/>
+        <result column="phone" property="phone"/>
+        <result column="email" property="email"/>
+        <result column="balance" property="balance"/>
+    </resultMap>
+
+    <select id="selectByIdNumber" resultMap="patientMap">
+        select * from patients where id_card_number=#{idCardNumber}
+    </select>
+
+    <select id="selectByPhone" resultMap="patientMap">
+        select * from patients where phone=#{phone}
+    </select>
+
+    <select id="selectByName" resultMap="patientMap">
+        select * from patients where name=#{name}
+    </select>
+
+    <insert id="insertPatient">
+        insert into patients(patient_id,id_card_number,password,name,avatar,phone,email,balance)
+        values (#{patientId},#{idCardNumber},#{password},#{name},#{avatar},#{phone},#{email},#{balance})
+    </insert>
+
+    <select id="getMaxId" resultType="int">
+        select max(patient_id) from patients
+    </select>
+    <update id="updateBalance">
+        update patients set balance=#{money} where phone=#{phone}
+    </update>
+    <update id="updateBalA">
+        update patients set balance=balance - #{money} where patient_id=#{id}
+    </update>
+
+    <select id="selectAll" resultMap="patientMap">
+        select * from patients
+    </select>
+
+    <select id="selectById" resultMap="patientMap">
+        select * from patients where patient_id=#{id};
+    </select>
+
+    <update id="updateById">
+        update patients set id_card_number=#{idCardNumber},password=#{password},name=#{name},phone=#{phone},email=#{email},balance=#{balance}
+        where patient_id = #{patientId}
+    </update>
+
+    <delete id="deleteById">
+        delete from patients where patient_id=#{id}
+    </delete>
+
+    <update id="updatePwd">
+        update patients set password=#{password} where patient_id=#{id};
+    </update>
+
+</mapper>

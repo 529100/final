@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ustb.hospital.mapper.ConsultationMapper">
+    <resultMap id="consultMap" type="com.ustb.hospital.entity.Consultation">
+        <id column="consultation_id" property="consultation_id"/>
+        <result column="patient_id" property="patientId"/>
+        <result column="id_card_number" property="idCardNumber"/>
+        <result column="password" property="password"/>
+        <result column="name" property="name"/>
+        <result column="avatar" property="avatar"/>
+        <result column="phone" property="phone"/>
+        <result column="email" property="email"/>
+        <result column="balance" property="balance"/>
+
+    </resultMap>
+    <select id="selectConsultationById" resultMap="consultMap">
+        select * from consultation where consultation_id = #{id}
+    </select>
+    <insert id="insertConsultation">
+        insert into consultation(patient_id,doctor_id,is_hospital_registered,is_hospitalized,medical_advice_case)
+        values (#{patient_id},#{doctor_id},#{is_hospital_registered},#{is_hospitalized},#{medical_advice_case})
+    </insert>
+
+</mapper>

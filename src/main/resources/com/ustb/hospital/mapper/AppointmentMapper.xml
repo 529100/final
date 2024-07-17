@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ustb.hospital.mapper.AppointmentMapper">
+    <resultMap id="appointMap" type="com.ustb.hospital.entity.Appointment">
+        <id column="appointment_id" property="appointment_id"/>
+        <result column="patient_id" property="patient_id"/>
+        <result column="doctor_id" property="doctor_id"/>
+        <result column="appointment_date" property="appointment_date"/>
+        <result column="status" property="status"/>
+        <association property="doctors" javaType="com.ustb.hospital.entity.Doctors">
+        <result column="job_number" property="jobNumber"/>
+        <result column="name" property="name"/>
+        <result column="registration_fee" property="registrationFee"/>
+        </association>
+        <association property="departments" javaType="com.ustb.hospital.entity.Departments">
+            <result column="department_name" property="department_name"/>
+        </association>
+        <association property="professionalTitles" javaType="com.ustb.hospital.entity.ProfessionalTitles">
+            <result column="title_name" property="titleName"/>
+        </association>
+    </resultMap>
+    <resultMap id="AppointMap" type="com.ustb.hospital.entity.Appointment">
+        <id column="appointment_id" property="appointment_id"/>
+        <result column="patient_id" property="patient_id"/>
+        <result column="doctor_id" property="doctor_id"/>
+        <result column="appointment_date" property="appointment_date"/>
+        <result column="status" property="status"/>
+        <association property="patients" javaType="com.ustb.hospital.entity.Patients">
+            <result column="name" property="name"/>
+            <result column="phone"   property="phone"/>
+        </association>
+    </resultMap>
+    <select id="getAppointmentByPtId" resultMap="appointMap">
+        select
+        ap.appointment_id,
+        ap.status,
+        ap.appointment_date,
+        job_number,
+        name,
+        registration_fee,
+        department_name,
+        title_name
+        from
+        appointments   ap,
+        doctors doct,
+        departments dept,
+        professional_titles pt
+        where
+        doct.doctor_id = ap.doctor_id
+        and  doct.department_id=dept.department_id
+        and doct.professional_title_id = pt.id
+        <if test="patient_id!=null and patient_id!=''">
+            and ap.patient_id= #{id}
+        </if>
+
+    </select>
+    <select id="getAppointmentByDocId" resultMap="AppointMap">
+        select
+        ap.appointment_id,
+        ap.appointment_date,
+        name,
+        phone
+        from
+        appointments   ap,
+        patients pt
+        where
+        ap.patient_id = pt.patient_id
+        and
+        ap.status = "booked"
+        <if test="doctor_id!=null and doctor_id!=''">
+            and ap.doctor_id= #{id}
+        </if>
+    </select>
+    <insert id="insertAppointment">
+        insert into appointments(patient_id,doctor_id,appointment_date,status) values (#{patient_id}, #{doctor_id}, #{appointment_date},"booked")
+    </insert>
+    <select id="selectById" resultMap="AppointMap">
+        select * from appointments where appointment_id = #{id}
+    </select>
+    <update id="update">
+        update appointments set status = "completed" where appointment_id = #{id};
+    </update>
+    <update id="delete">
+        update appointments set status = "canceled" where appointment_id = #{id};
+    </update>
+</mapper>

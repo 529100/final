@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ustb.hospital.mapper.ProfessionalTitlesMapper">
+    <resultMap id="pftMap" type="com.ustb.hospital.entity.ProfessionalTitles">
+        <id column="id" property="id"/>
+        <result column="title_name" property="titleName"/>
+
+        <result column="description" property="description"/>
+    </resultMap>
+
+
+    <select id="selectAll" resultMap="pftMap">
+        select * from professional_titles
+    </select>
+
+
+</mapper>

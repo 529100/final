@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ustb.hospital.mapper.DepartmentsMapper">
+    <resultMap id="deptMap" type="com.ustb.hospital.entity.Departments">
+        <id column="department_id" property="department_id"/>
+        <result column="department_name" property="department_name"/>
+        <result column="department_pid" property="department_pid"/>
+        <result column="department_level" property="department_level"/>
+        <result column="department_path" property="department_path"/>
+        <result column="department_description" property="department_description"/>
+    </resultMap>
+
+    <select id="selectSecondDeptByPid" resultMap="deptMap">
+        select * from departments where department_pid=#{deptPid}
+    </select>
+
+    <select id="selectAll" resultMap="deptMap">
+        select * from departments
+    </select>
+
+    <select id="selectFirstDept" resultMap="deptMap">
+        select * from departments where department_level=#{level}
+    </select>
+
+    <select id="selectByName" resultMap="deptMap">
+        select * from departments where department_name = #{name}
+    </select>
+
+    <select id="selectById" resultMap="deptMap">
+        select * from departments where department_id = #{id}
+    </select>
+
+    <select id="getMaxId" resultType="int">
+        select max(department_id) from departments
+    </select>
+
+    <insert id="insert">
+        insert into `hospital`.`departments`(`department_id`,`department_name`,`department_pid`,`department_level`,`department_path`,`department_description`)
+        values (#{department_id},#{department_name},#{department_pid},#{department_level},#{department_path},#{department_description})
+    </insert>
+
+    <insert id="insertDept">
+        insert into departments(department_name,department_description) values (#{department_name},#{department_description})
+    </insert>
+
+    <update id="updateById">
+        update departments set department_name=#{name},department_description=#{desc} where department_id=#{id}
+    </update>
+    <select id="selectDeptByLevel" resultMap="deptMap">
+        select * from departments where department_level=#{level}
+    </select>
+</mapper>

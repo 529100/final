@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ustb.hospital.mapper.ScheduleMapper">
+    <resultMap id="scheduleMap" type="com.ustb.hospital.entity.Schedule">
+        <id column="schedule_id" property="schedule_id"/>
+        <result column="doctor_id" property="doctor_id"/>
+        <result column="date" property="date"/>
+        <result column="shift_time" property="shift_time"/>
+        <result column="department_id" property="department_id"/>
+        <result column="is_available" property="is_available"/>
+        <result column="visit_count" property="visit_count"/>
+        <result column="remarks" property="remarks"/>
+        <association property="doctors" javaType="com.ustb.hospital.entity.Doctors">
+            <result column="job_number" property="jobNumber"/>
+            <result column="name" property="name"/>
+            <result column="avatar" property="avatar"/>
+            <result column="phone" property="phone"/>
+            <result column="registration_fee" property="registrationFee"/>
+        </association>
+        <association property="departments" javaType="com.ustb.hospital.entity.Departments">
+            <result column="department_name" property="department_name"/>
+        </association>
+        <association property="professionalTitles" javaType="com.ustb.hospital.entity.ProfessionalTitles">
+            <result column="title_name" property="titleName"/>
+        </association>
+    </resultMap>
+    <resultMap id="scheduleMap1" type="com.ustb.hospital.entity.Schedule">
+        <id column="schedule_id" property="schedule_id"/>
+        <result column="date" property="date"/>
+        <result column="shift_time" property="shift_time"/>
+        <result column="is_available" property="is_available"/>
+        <result column="visit_count" property="visit_count"/>
+        <result column="remarks" property="remarks"/>
+        <association property="doctors" javaType="com.ustb.hospital.entity.Doctors">
+            <result column="name" property="name"/>
+        </association>
+        <association property="departments" javaType="com.ustb.hospital.entity.Departments">
+            <result column="department_name" property="department_name"/>
+        </association>
+    </resultMap>
+    <select id="selectByMulti" resultMap="scheduleMap">
+        select
+            sch.doctor_id,
+            sch.date,
+            job_number,
+            name,
+            avatar,
+            phone,
+            registration_fee,
+            department_name,
+            title_name
+        from
+            doctor_schedule   sch,
+            doctors doct,
+            departments dept,
+            professional_titles pt
+        where
+            doct.doctor_id = sch.doctor_id
+        and  sch.department_id=dept.department_id
+        and doct.professional_title_id = pt.id
+        <if test="date!=null and date!=''">
+            and sch.date=#{date}
+        </if>
+        <if test="deptId!=null and deptId!=''">
+            and sch.department_id=#{deptId}
+        </if>
+    </select>
+    <select id="selectAll" resultMap="scheduleMap1">
+        select schedule_id,
+        date,
+        shift_time,
+        is_available,
+        visit_count,
+        remarks,
+        name,
+        department_name
+        from doctor_schedule ds,
+        doctors doc,
+        departments dep
+        where
+        ds.department_id=dep.department_id
+        and ds.doctor_id=doc.doctor_id
+        <if test="docName!=null and docName!=''">
+            and doc.name = #{docName}
+        </if>
+        <if test="deptId!=null and deptId!='' and deptId!=-1">
+            and ds.department_id = #{deptId}
+        </if>
+    </select>
+    <select id="selectById" resultMap="scheduleMap1">
+        select schedule_id,
+            date,
+            shift_time,
+            is_available,
+            visit_count,
+            remarks,
+            name,
+            department_name
+        from doctor_schedule ds,
+            doctors doc,
+            departments dep
+        where
+            ds.department_id=dep.department_id
+          and ds.doctor_id=doc.doctor_id
+          and ds.schedule_id = #{id}
+    </select>
+    <delete id="deleteById">
+        delete from doctor_schedule where schedule_id = #{id}
+    </delete>
+    <select id="getMaxId" resultType="int">
+        select max(schedule_id) from doctor_schedule
+    </select>
+    <insert id="insert">
+        insert into doctor_schedule(schedule_id,doctor_id,date,shift_time,department_id,is_available,visit_count,remarks)
+        values (#{schedule_id},#{doctor_id},#{date},#{shift_time},#{department_id},#{is_available},#{visit_count},#{remarks})
+    </insert>
+    <select id="selectByDocIDDateTime" resultMap="scheduleMap1">
+        select schedule_id,
+            date,
+            shift_time,
+            is_available,
+            visit_count,
+            remarks,
+            name,
+            department_name
+        from doctor_schedule ds,
+            doctors doc,
+            departments dep
+        where
+            ds.department_id=dep.department_id
+          and ds.doctor_id=doc.doctor_id
+          and ds.doctor_id = #{docId}
+          and ds.date = #{date}
+          and ds.shift_time = #{time}
+    </select>
+    <update id="updateById">
+        update doctor_schedule set date = #{date} , shift_time = #{time} ,is_available =#{isAvailable},visit_count=#{visitCount},remarks=#{remarks} where schedule_id = #{scheduleId}
+    </update>
+
+    <select id="selectByDocId" resultMap="scheduleMap1">
+        select schedule_id,
+            date,
+            shift_time,
+            is_available,
+            visit_count,
+            remarks,
+            name,
+            department_name
+        from doctor_schedule ds,
+            doctors doc,
+            departments dep
+        where
+            ds.doctor_id=doc.doctor_id
+    </select>
+</mapper>

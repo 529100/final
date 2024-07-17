@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="renderer" content="webkit">
+<title>增加排班</title>
+<link rel="stylesheet" href="/css/pintuer.css">
+<link rel="stylesheet" href="/css/admin.css">
+<script src="/js/jquery-3.7.1.min.js"></script>
+<script src="/js/pintuer.js"></script>
+</head>
+<body>
+<div class="panel admin-panel">
+  <div class="panel-head" id="add"><strong><span class="icon-pencil-square-o"></span>增加内容</strong></div>
+  <div class="body-content">
+    <form method="post" class="form-x" action="/schedule/save">
+      <!--
+    <select v-model="selectedDepartment" @change="updateDoctors">
+      <option v-for="department in departments" :value="department.id">
+        {{ department.name }}
+      </option>
+    </select>
+    <select v-model="selectedDoctor" :disabled="!selectedDepartment">
+      <option v-for="doctor in doctors" :value="doctor.id">
+        {{ doctor.name }}
+      </option>
+    </select>
+  </div>
+-->
+      <if condition="$iscid eq 1">
+        <div class="form-group">
+          <div class="label">
+            <label>科室名称：</label>
+          </div>
+          <div class="field">
+            <select name="deptId" onchange="initDocListByDeptId()" class="input w50" >
+              <option value="-1">请选择科室</option>
+            </select>
+            <div class="tips"></div>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="label">
+            <label>医生姓名：</label>
+          </div>
+          <div class="field">
+            <!--onchange="initDocListByDeptId(${deptId})"-->
+            <select name="docId" class="input w50">
+              <option value="-1">请选择医生</option>
+            </select>
+            <div class="tips"></div>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="label">
+            <label>排班日期：</label>
+          </div>
+          <div class="field">
+            <input id="date" type="date" class="input w50" value="" name="date"/>
+            <div class="tips"></div>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="label">
+            <label>排班时间：</label>
+          </div>
+          <div class="field">
+            <input id="time" type="time" class="input w50" value="" name="time"/>
+            <div class="tips"></div>
+          </div>
+        </div>
+        <div class="form-group">
+          <div class="label">
+            <label>能否排班：</label>
+          </div>
+          <div class="field">
+            <select name="isAvailable" class="input w50">
+              <option value="1">能</option>
+              <option value="0">不能</option>
+            </select>
+            <div class="tips"></div>
+          </div>
+        </div>
+      </if>
+      <div class="form-group">
+        <div class="label">
+          <label>就诊数量：</label>
+        </div>
+        <div class="field">
+          <input type="text" class="input w50" value="" name="visitCount" />
+          <div class="tips"></div>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="label">
+          <label>备注：</label>
+        </div>
+        <div class="field">
+          <textarea class="input" name="remarks" style=" height:90px;"></textarea>
+          <div class="tips"></div>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="label">
+          <label></label>
+        </div>
+        <div class="field">
+          <button class="button bg-main icon-check-square-o" type="submit"> 提交</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+<script type="text/javascript">
+//
+$(function (){
+  dateNow();
+  timeNow();
+  initDeptList();
+  // initDocListByDeptId();
+})
+
+function  initDeptList(){
+  $.ajax({
+    type: "GET",
+    url: "/second/all",
+    //data:{"pageNum":pageNum,"deptId":deptId,"docName":docName,"jobNumber":jobNumber},
+    dataType: "json",
+    success: function (res) {//list<Dept>
+      $.each(res, function (i, v) {
+        var optionObj = $("<option value='" + v.department_id + "'>" + v.department_name + "</option>");
+        optionObj.appendTo($("select[name='deptId']"));
+      })
+    }
+  })
+}
+
+function  initDocListByDeptId(){
+  $(document).ready(function() {
+    // var deptId = $("select[name='deptId']").val();
+
+    $("select[name='deptId']").change(function() {
+      var deptId = $(this).val();
+      $.ajax({
+        type: "GET",
+        url: "/doctorsByDeptId",
+        data:{"deptId":deptId},
+        dataType: "json",
+        success: function(res) {//list<Doc>
+          $("#docId").html("");
+          // 将子菜单选项添加到子菜单
+          $("select[name='docId']").empty();
+          var optObj= $('<option value="-1">请选择医生</option>');
+          optObj.appendTo($("select[name='docId']"));
+          $.each(res, function(i, v) {
+            var optionObj = $('<option value="' + v.doctorId + '">' + v.name + '</option>');
+            optionObj.appendTo($("select[name='docId']"));
+            // $("#docId").append('<option value="' + v.doctorId + '">' + v.name + '</option>');
+          });
+        }
+      });
+    });
+  });
+}
+
+function dateNow(){
+  //获取当前时间
+  var d = new Date();
+  //包装年月日的格式
+  var a = d.getFullYear() + "-";
+  //月是从零开始的所以得加1，并且判断月份是否大于等于10月，如果大于十月得个前面加零来跟格式匹配
+  if (d.getMonth() + 1 >= 10 ){
+  var c = (d.getMonth() + 1) + "-";
+}
+  else{
+  var c = "0" + (d.getMonth() + 1) + '-';
+}
+  //不能使用getDay()方法得原因是因为他获取的是今天星期几，只有7天
+  if (d.getDate() >= 10 ){
+  var n = d.getDate();
+}
+  else{
+  var n = "0" + d.getDate();
+}
+  document.getElementById("date").value = a + c + n;
+}
+
+function timeNow(){
+  var currentTime = new Date();
+  var hour = currentTime.getHours().toString().padStart(2, '0');
+  var minute = currentTime.getMinutes().toString().padStart(2, '0');
+
+  var defaultValue = hour + ':' + minute ;
+  document.getElementById("time").value = defaultValue;
+}
+
+</script>
+</body>
+</html>
